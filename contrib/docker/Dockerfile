@@ -1,7 +1,7 @@
 from ubuntu:focal
 
 RUN apt update && apt dist-upgrade -y
-# we need to setup tzdata otherwiese focal ask for time zone
+# we need to setup tzdata otherwise focal ask for time zone
 RUN DEBIAN_FRONTEND=noninteractive \
     TZ=Europe/Berlin \
     apt install -y build-essential cmake git-core \
@@ -12,6 +12,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 WORKDIR /work
 
 ENTRYPOINT /bin/bash
+
+# WE DO NOT CREATE A MAGOS USER HERE!!
 
 # docker build . -t mongo-build
 # docker run -v$(pwd)/app:/app -v $(pwd):/work --rm -it mongo-build  bash

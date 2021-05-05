@@ -1,6 +1,10 @@
 #!/bin/bash
 CMAKE_COMMANDS='-DCMAKE_INSTALL_PREFIX=/app -DBUILD_EXTRACTORS=ON '
 
+
+# we need to create same user as on realm and world
+ useradd -m -d /home/mangos  -c "MaNGOS" -U mangos
+
 # container application 
 if [ ! -d "app/bin" ]; then
   mkdir -p app/bin
@@ -8,17 +12,25 @@ fi
 
 # needed for mangos container - from docker-compose build
 if [ ! -f "app/bin/mangosd-entrypoint.sh" ]; then
-   cp mangos/contrib/docker/world/mangosd-entrypoint.sh app/bin/
+
+   cp mangos/contrib/docker/world/mangosd-entrypoint.sh app/bin/entrypoint.sh
+   chown mangos:mangos mangosd-entrypoint.sh 
+
 fi
 
 # docker env
 if [ ! -f "mangos.env" ]; then
+
    cp mangos/contrib/docker/mangos.env .
+   chown mangos:mangos mangos.env
+
 fi
 
 # the compose file for all 3 containers (db /realm /world)
 if [ ! -f "docker-compose.yml" ]; then
    cp mangos/contrib/docker/docker-compose.yml .
+   chown mangos:mangos docker-compose.yml 
+
 fi
 
 # update git source
@@ -42,3 +54,6 @@ make -j$(nproc --all)
 # /app/bin/{tools}
 # /app/etc
 make install
+
+# make 
+chown -R mangos:mangos /app
