@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# run from the root level
+
+cd /
+
+# this point is only usefull for one time shoot.
+# normal database clone exists
+
+if [ ! -d "classic-db" ]; then
+
+   echo  git clone git://github.com/cmangos/classic-db.git
+   
+   cd classic-db
+
+else 
+
+  cd classic-db
+  # if configuration exist remove it, 
+  # because git stroungle us with a commit request
+  if [ -f "/classic-db/InstallFullDB.config" ]; then
+     rm /classic-db/InstallFullDB.config
+  fi
+
+  git pull
+
+
+fi
+
+echo Create Database structur
+
+mysql -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD < ../mangos/sql/create/db_create_mysql.sql
+echo Database structur created
+
+# mangos work remote to the database container
+# while we not export the database to external interface, we are save at this point.
+
+TSQL=/tmp/mangos-allow-remote.sql
+
+cat << EOF > $TSQL
+GRANT ALL PRIVILEGES ON  classicmangos.* TO 'mangos'@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON  classiccharacters.* TO 'mangos'@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON  classicrealmd.* TO 'mangos'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EOF
+
+echo Grant database user remote access inside the container structur
+
+mysql -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD  < $TSQL
+
+rm $TSQL
+
+cat << EOF > /classic-db/InstallFullDB.config
+DB_HOST="$MYSQL_HOST"
+DB_PORT="3306"
+DATABASE="classicmangos"
+USERNAME="$MYSQL_USER"
+PASSWORD="$MYSQL_PASSWORD"
+CORE_PATH="../mangos"
+MYSQL="mysql"
+FORCE_WAIT="YES"
+DEV_UPDATES="NO"
+AHBOT="NO"
+EOF
+echo Database configuration written ...
+cd /classic-db
+./InstallFullDB.sh
