@@ -1,25 +1,27 @@
 #!/bin/bash
 
-# run from the root level
+DATABASE_TYPE=classic-db
+
+# run from the root level in the container
 
 cd /
 
 # this point is only usefull for one time shoot.
 # normal database clone exists
 
-if [ ! -d "classic-db" ]; then
+if [ ! -d "$DATABASE_TYPE" ]; then
 
-   echo  git clone git://github.com/cmangos/classic-db.git
+   echo  git clone git://github.com/cmangos/$DATABASE_TYPE.git
    
-   cd classic-db
+   cd $DATABASE_TYPE
 
 else 
 
-  cd classic-db
+  cd $DATABASE_TYPE
   # if configuration exist remove it, 
   # because git stroungle us with a commit request
-  if [ -f "/classic-db/InstallFullDB.config" ]; then
-     rm /classic-db/InstallFullDB.config
+  if [ -f "/$DATABASE_TYPE/InstallFullDB.config" ]; then
+     rm /$DATABASE_TYPE/InstallFullDB.config
   fi
 
   git pull
@@ -50,7 +52,7 @@ mysql -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD  < $TSQL
 
 rm $TSQL
 
-cat << EOF > /classic-db/InstallFullDB.config
+cat << EOF > /$DATABASE_TYPE/InstallFullDB.config
 DB_HOST="$MYSQL_HOST"
 DB_PORT="3306"
 DATABASE="classicmangos"
@@ -63,5 +65,5 @@ DEV_UPDATES="NO"
 AHBOT="NO"
 EOF
 echo Database configuration written ...
-cd /classic-db
+
 ./InstallFullDB.sh
