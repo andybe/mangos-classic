@@ -29,6 +29,9 @@ else
 
 fi
 
+######################################################
+# DATABASE STRUCTUR                                  #
+######################################################
 echo Create Database structur
 
 mysql -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD < ../mangos/sql/create/db_create_mysql.sql
@@ -50,8 +53,20 @@ echo Grant database user remote access inside the container structur
 
 mysql -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD  < $TSQL
 
+
 rm $TSQL
 
+######################################################
+# REALMD BASE DATA                                   #
+######################################################
+
+# create the realmd
+echo Update realmd database
+mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD classicrealmd < mangos/sql/base/realmd.sql
+
+######################################################
+# WORLD DATA                                         #
+######################################################
 cat << EOF > /$DATABASE_TYPE/InstallFullDB.config
 DB_HOST="$MYSQL_HOST"
 DB_PORT="3306"
